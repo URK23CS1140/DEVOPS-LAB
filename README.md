@@ -1,12 +1,25 @@
+# 24CS2019 · DevOps Laboratory End Semester Practical Answers
 
-24CS2019 · DevOps LaboratoryEnd Semester Practical Answers
 Division of Computer Science & Engineering · Karunya Institute of Technology and Sciences
+
 Git & GitHub Docker Flask / Python Jenkins in Docker GitHub Actions Kubernetes / kubectl
 
-Lab Setup → Git Python 3.11+ & pip Docker Engine Jenkins (via Docker) kubectl + Minikube GitHub account Docker Hub account
+---
 
+## Lab Setup
 
-// Questions
+Git
+Python 3.11+ & pip
+Docker Engine
+Jenkins (via Docker)
+kubectl + Minikube
+GitHub account
+Docker Hub account
+
+---
+
+## Questions
+
 1 Git Operations & PR
 2 Dockerise Flask + Hub
 3 Monolithic App
@@ -18,15 +31,17 @@ Lab Setup → Git Python 3.11+ & pip Docker Engine Jenkins (via Docker) kubectl 
 9 Clone Modify Push
 10 Actions Build & Test
 
-Q 01
+---
+
+# Q 01
 
 Perform Git operations to commit, push, merge branches, and create a pull request on GitHub.
+
 Git GitHub
 
+## Step 1 – Initialise repo & first commit
 
-Step 1 – Initialise repo & first commit
-
-bashcopy
+```bash
 # Initialise a local repository
 git init myproject
 cd myproject
@@ -35,41 +50,48 @@ cd myproject
 echo "# My DevOps Project" > README.md
 git add README.md
 git commit -m "Initial commit: add README"
+```
 
-Step 2 – Create a feature branch & make changes
+## Step 2 – Create a feature branch & make changes
 
-bashcopy
+```bash
 git checkout -b feature/hello
 
 echo "Hello from feature branch" > hello.txt
 git add hello.txt
 git commit -m "feat: add hello.txt"
+```
 
-Step 3 – Push to GitHub & open Pull Request
+## Step 3 – Push to GitHub & open Pull Request
 
-bashcopy
+```bash
 # Connect to remote (first time only)
 git remote add origin https://github.com/<username>/myproject.git
 git push -u origin feature/hello
-ℹ️On GitHub → go to your repo → click Compare & pull request → add a description → click Create pull request.
+```
 
-Step 4 – Merge & push main
+ℹ️ On GitHub → go to your repo → click Compare & pull request → add a description → click Create pull request.
 
-bashcopy
+## Step 4 – Merge & push main
+
+```bash
 git checkout main
 git merge feature/hello
 git push origin main
 git log --oneline --graph
+```
 
-Q 02
+---
+
+# Q 02
 
 Containerise a Flask application using Docker and deploy the image to Docker Hub.
+
 Docker Flask Docker Hub
 
+## app.py
 
-app.py
-
-pythoncopy
+```python
 from flask import Flask
 app = Flask(__name__)
 
@@ -79,15 +101,17 @@ def home():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+```
 
-requirements.txt
+## requirements.txt
 
-textcopy
+```
 flask
+```
 
-Dockerfile
+## Dockerfile
 
-dockerfilecopy
+```dockerfile
 FROM python:3.11-slim
 WORKDIR /app
 COPY requirements.txt .
@@ -95,10 +119,11 @@ RUN pip install -r requirements.txt
 COPY . .
 EXPOSE 5000
 CMD ["python", "app.py"]
+```
 
-Build, run & push to Docker Hub
+## Build, run & push to Docker Hub
 
-bashcopy
+```bash
 # Build
 docker build -t <dockerhub-username>/flask-app:latest .
 
@@ -108,19 +133,24 @@ docker run -d -p 5000:5000 <dockerhub-username>/flask-app:latest
 # Login and push
 docker login
 docker push <dockerhub-username>/flask-app:latest
-Expected Output
-✅Browser shows Hello from Dockerised Flask! — Image visible on Docker Hub under your repository.
+```
 
-Q 03
+Expected Output
+Browser shows Hello from Dockerised Flask! — Image visible on Docker Hub under your repository.
+
+---
+
+# Q 03
 
 Develop and demonstrate a simple monolithic application model using Python or Flask.
+
 Python Flask
 
-📖A monolithic app bundles all features — UI, business logic, and data — into a single deployable unit. Below is a Student CRUD REST API in Flask.
+A monolithic app bundles all features — UI, business logic, and data — into a single deployable unit. Below is a Student CRUD REST API in Flask.
 
-app.py – Complete monolithic app
+## app.py – Complete monolithic app
 
-pythoncopy
+```python
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
@@ -147,35 +177,37 @@ def delete_student(sid):
 
 if __name__ == '__main__':
     app.run(debug=True)
+```
 
-Run & test with curl
+## Run & test with curl
 
-bashcopy
+```bash
 pip install flask
 python app.py
 
-# Add a student
 curl -X POST http://localhost:5000/students \
   -H "Content-Type: application/json" \
   -d '{"name":"Alice","roll":"CS001"}'
 
-# List all students
 curl http://localhost:5000/students
+```
 
-Q 04
+---
+
+# Q 04
 
 Create a CI pipeline using GitHub Actions to build and push a Docker image of a Python app to Docker Hub.
+
 GitHub Actions Docker Python
 
+## Step 1 – Add secrets to GitHub repo
 
-Step 1 – Add secrets to GitHub repo
-🔐Repo → Settings → Secrets and variables → Actions → New repository secret:
 DOCKER_USERNAME — your Docker Hub username
 DOCKER_PASSWORD — your Docker Hub access token
 
-.github/workflows/docker-publish.yml
+## .github/workflows/docker-publish.yml
 
-yamlcopy
+```yaml
 name: Build and Push Docker Image
 
 on:
@@ -200,23 +232,24 @@ jobs:
 
       - name: Push to Docker Hub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/python-app:latest
-Expected Output
-✅Every push to main triggers a green workflow run in the Actions tab and the image appears on Docker Hub.
+```
 
-Q 05
+Expected Output
+Every push to main triggers a workflow run and the image appears on Docker Hub.
+
+---
+
+# Q 05
 
 Configure a Jenkins pipeline to automate the building and deployment of a Dockerized application from GitHub.
+
 Jenkins Docker GitHub
 
-🐳Jenkins runs inside Docker — no Java installation needed on the host. The Docker socket is mounted so Jenkins can build and push images directly.
+## Step 1 – Start Jenkins container
 
-Step 1 – Start Jenkins container
-
-bashcopy
-# Create a persistent volume for Jenkins data
+```bash
 docker volume create jenkins-data
 
-# Run Jenkins (mounts Docker socket so it can build images)
 docker run -d \
   --name jenkins \
   -p 8080:8080 -p 50000:50000 \
@@ -224,19 +257,19 @@ docker run -d \
   -v /var/run/docker.sock:/var/run/docker.sock \
   jenkins/jenkins:lts
 
-# Get the initial admin password
 docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
-ℹ️Open http://localhost:8080, paste the password, install suggested plugins, then install the Docker Pipeline Plugin from Manage Plugins.
+```
 
-Step 2 – Install Docker CLI inside Jenkins container
+## Step 2 – Install Docker CLI inside Jenkins
 
-bashcopy
+```bash
 docker exec -u root jenkins bash -c \
   "apt-get update && apt-get install -y docker.io"
+```
 
-Step 3 – Jenkinsfile (place in root of GitHub repo)
+## Step 3 – Jenkinsfile
 
-groovycopy
+```groovy
 pipeline {
     agent any
     environment {
@@ -276,51 +309,36 @@ pipeline {
         }
     }
 }
+```
 
-Step 4 – Jenkins pipeline setup
-⚙️ 1. Jenkins → New Item → Pipeline
-2. Pipeline section → Pipeline script from SCM → Git → enter repo URL
-3. Manage Jenkins → Credentials → Add Docker Hub credentials with ID dockerhub-creds
-4. Click Build Now
+---
 
-Q 06
+# Q 06
 
 Use kubectl commands to create, scale, and manage Kubernetes resources like pods and deployments.
-Kubernetes kubectl
 
-
-Step 1 – Create a deployment
-
-bashcopy
+```bash
 kubectl create deployment myapp --image=nginx:latest
 kubectl get deployments
 kubectl get pods
 
-Step 2 – Scale the deployment
-
-bashcopy
-# Scale up to 3 replicas
 kubectl scale deployment myapp --replicas=3
 kubectl get pods
 
-# Scale back down
 kubectl scale deployment myapp --replicas=1
 
-Step 3 – Expose, inspect & clean up
-
-bashcopy
 kubectl expose deployment myapp --port=80 --type=NodePort
 kubectl get services
 kubectl describe pod <pod-name>
 kubectl logs <pod-name>
 
-# Clean up
 kubectl delete deployment myapp
 kubectl delete service myapp
+```
 
-Step 4 – Using a YAML manifest (deployment.yaml)
+## deployment.yaml
 
-yamlcopy
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -340,21 +358,20 @@ spec:
         image: nginx:latest
         ports:
         - containerPort: 80
+```
 
-bashcopy
+```bash
 kubectl apply -f deployment.yaml
 kubectl get all
+```
 
-Q 07
+---
 
-Create a GitHub Actions pipeline to automatically build and push a Docker image of a Python app to Docker Hub.
-GitHub Actions Docker Python
+# Q 07
 
-💡Uses the official docker/build-push-action for best-practice multi-platform builds with Docker Buildx.
+Create a GitHub Actions pipeline to automatically build and push a Docker image.
 
-.github/workflows/build-push.yml
-
-yamlcopy
+```yaml
 name: Docker Build & Push
 
 on:
@@ -368,33 +385,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+      - uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/python-app:latest
+```
 
-Q 08
+---
+
+# Q 08
 
 Containerise a Flask application using Docker.
-Docker Flask
 
-ℹ️This question focuses only on containerisation — no push to Docker Hub required (that's Q2).
+## app.py
 
-app.py
-
-pythoncopy
+```python
 from flask import Flask
 app = Flask(__name__)
 
@@ -404,10 +412,11 @@ def index():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+```
 
-Dockerfile
+## Dockerfile
 
-dockerfilecopy
+```dockerfile
 FROM python:3.11-slim
 WORKDIR /app
 COPY requirements.txt .
@@ -415,60 +424,55 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 EXPOSE 5000
 CMD ["python", "app.py"]
+```
 
-Build & run
+## Build & run
 
-bashcopy
+```bash
 docker build -t flask-container .
 docker run -d -p 5000:5000 --name myflask flask-container
 docker ps
-# Visit http://localhost:5000
+```
 
-Q 09
+---
 
-Clone a GitHub repository, modify a file and push the changes back to the repository.
-Git GitHub
+# Q 09
 
+Clone a GitHub repository, modify a file and push the changes back.
 
-Step 1 – Clone
-
-bashcopy
+```bash
 git clone https://github.com/<username>/<repo-name>.git
 cd <repo-name>
 
-Step 2 – Modify a file
-
-bashcopy
 echo "Updated content" >> README.md
 cat README.md
 git diff
 
-Step 3 – Commit & push
-
-bashcopy
 git add README.md
 git commit -m "docs: update README with new content"
 git push origin main
 git log --oneline -3
+```
 
-Q 10
+---
 
-Configure a GitHub Actions workflow to automatically build and test a Python application.
-GitHub Actions Python pytest
+# Q 10
 
+Configure a GitHub Actions workflow to build and test a Python application.
 
-app.py
+## app.py
 
-pythoncopy
+```python
 def add(a, b):
     return a + b
 
 def greet(name):
     return f"Hello, {name}!"
+```
 
-test_app.py
+## test_app.py
 
-pythoncopy
+```python
 from app import add, greet
 
 def test_add():
@@ -476,15 +480,17 @@ def test_add():
 
 def test_greet():
     assert greet("World") == "Hello, World!"
+```
 
-requirements.txt
+## requirements.txt
 
-textcopy
+```
 pytest
+```
 
-.github/workflows/python-test.yml
+## .github/workflows/python-test.yml
 
-yamlcopy
+```yaml
 name: Python Build & Test
 
 on:
@@ -509,7 +515,13 @@ jobs:
 
       - name: Run tests
         run: pytest test_app.py -v
+```
+
 Expected Output
-✅GitHub Actions shows 2 passed with green checkmarks. Every push to main automatically runs the tests.
-↑ back to top
-24CS2019 – DevOps Laboratory  ·  Karunya Institute of Technology and Sciences  ·  Division of Computer Science and Engineering
+GitHub Actions shows tests passed with green checkmarks.
+
+---
+
+24CS2019 – DevOps Laboratory
+Karunya Institute of Technology and Sciences
+Division of Computer Science and Engineering
